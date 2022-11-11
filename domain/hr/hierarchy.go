@@ -26,7 +26,24 @@ func NewHierarchy(req map[string]string) (Hierarchy, error) {
 
 type Hierarchy map[string]string
 
+func (h Hierarchy) SupervisorOf(name string) string {
+	return h[name]
+}
+
+// Topology returns values from top to bottom of the hierarchy
+func (h Hierarchy) Topology() []string {
+	g := digraph.New()
+	for k, v := range h {
+		g.AddEdge(v, k)
+	}
+	dfo := digraph.NewDepthFirstOrder(g)
+	order := dfo.ReversePost()
+	return order
+}
+
+//go:generate go run github.com/golang/mock/mockgen -package=hrmock -destination=./hrmock/mock.go . HierarchyRepo
 type HierarchyRepo interface {
+	Get(context.Context) (Hierarchy, error)
 	Update(context.Context, Hierarchy) error
 }
 
