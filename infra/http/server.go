@@ -22,15 +22,17 @@ func NewServer(opts ServerOpts) *Server {
 	}
 
 	e := echo.New()
-	s := &Server{
-		e:    e,
-		hrUC: hrUC,
-	}
+	e.HideBanner = true
+	e.HTTPErrorHandler = ErrorHandler()
 	e.Use(middleware.Logger())
 	e.Use(middleware.KeyAuth(func(auth string, c echo.Context) (bool, error) {
 		return auth == opts.APISecret, nil
 	}))
 
+	s := &Server{
+		e:    e,
+		hrUC: hrUC,
+	}
 	s.registerRoutes()
 	return s
 }

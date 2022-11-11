@@ -2,7 +2,7 @@ package hr
 
 import (
 	"context"
-	"errors"
+	"personia/domain"
 	"personia/pkg/digraph"
 )
 
@@ -48,6 +48,6 @@ type HierarchyRepo interface {
 }
 
 var (
-	ErrHierarchyHasLoop          = errors.New("hierarchy has loop")
-	ErrHierarchyHasMultipleRoots = errors.New("hieracrchy has multiple roots")
+	ErrHierarchyHasLoop          = domain.NewError("hierarchy_has_loop", "hierarchy has loop")
+	ErrHierarchyHasMultipleRoots = domain.NewError("hierarchy_has_multi_roots", "hieracrchy has multiple roots")
 )
