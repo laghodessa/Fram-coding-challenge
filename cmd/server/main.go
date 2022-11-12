@@ -12,13 +12,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func migrateDB(db *sql.DB) {
-	q := `CREATE TABLE employee (name text, supervisor text)`
-	if _, err := db.Exec(q); err != nil {
-		log.Fatalf("migrate db: %v", err)
-	}
-}
-
 func getenv(env, fallback string) string {
 	v := os.Getenv(env)
 	if v == "" {

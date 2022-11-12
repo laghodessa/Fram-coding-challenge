@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"database/sql"
+	"net/http"
 	"personia/app"
 	"personia/infra/sqlite"
 	"time"
@@ -45,6 +46,10 @@ type Server struct {
 func (s *Server) registerRoutes() {
 	api := s.e.Group("/api")
 	RegisterHierarchy(api, s.hrUC)
+}
+
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.e.ServeHTTP(w, r)
 }
 
 func (s *Server) Start(addr string) error {
