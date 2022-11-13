@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"personia/infra/http"
+	"personia/infra/sqlite"
 	"syscall"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -28,7 +29,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("open db: %v", err)
 	}
-	migrateDB(db)
+	sqlite.MigrateDB(db)
 
 	server := http.NewServer(http.ServerOpts{
 		DB:        db,
