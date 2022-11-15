@@ -5,6 +5,7 @@ import "fmt"
 type Error struct {
 	Code    string
 	Message string
+	Meta    map[string]interface{}
 }
 
 func (e Error) Error() string {
@@ -12,7 +13,7 @@ func (e Error) Error() string {
 }
 
 func NewError(code, message string) error {
-	return Error{
+	return &Error{
 		Code:    code,
 		Message: message,
 	}

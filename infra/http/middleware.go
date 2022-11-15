@@ -10,8 +10,9 @@ import (
 )
 
 type HTTPError struct {
-	Code    string `json:"code,omitempty"`
-	Message string `json:"message"`
+	Code    string                 `json:"code,omitempty"`
+	Message string                 `json:"message"`
+	Meta    map[string]interface{} `json:"meta,omitempty"`
 	status  int
 	cause   error
 }
@@ -42,11 +43,12 @@ func ErrorHandler() echo.HTTPErrorHandler {
 }
 
 func toHTTPError(err error) HTTPError {
-	var derr domain.Error
+	var derr *domain.Error
 	if ok := errors.As(err, &derr); ok {
 		return HTTPError{
 			Code:    derr.Code,
 			Message: derr.Message,
+			Meta:    derr.Meta,
 			status:  codeToHTTPStatus(derr.Code),
 			cause:   nil,
 		}

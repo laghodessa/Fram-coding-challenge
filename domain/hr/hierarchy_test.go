@@ -1,6 +1,7 @@
 package hr_test
 
 import (
+	"personia/domain"
 	"personia/domain/hr"
 	"testing"
 
@@ -75,7 +76,7 @@ func TestNewHierarchy(t *testing.T) {
 	cases := []struct {
 		name     string
 		req      map[string]string
-		err      error
+		err      *domain.Error
 		expected hr.Hierarchy
 	}{
 		{
@@ -106,7 +107,7 @@ func TestNewHierarchy(t *testing.T) {
 				"Nick":    "Sophie",
 				"Sophie":  "Pete",
 			},
-			err: hr.ErrHierarchyHasLoop,
+			err: hr.NewInvalidHierarchyError([]string{"Pete", "Sophie", "Nick", "Pete"}, nil),
 		},
 		{
 			name: "when request contains multiple roots, it fails",
@@ -115,7 +116,16 @@ func TestNewHierarchy(t *testing.T) {
 				"Barbara": "Nick",
 				"Sophie":  "Jonas",
 			},
-			err: hr.ErrHierarchyHasMultipleRoots,
+			err: hr.NewInvalidHierarchyError(nil, []string{"Nick", "Jonas"}),
+		},
+		{
+			name: "when request contains both loop & multiple roots, it fails",
+			req: map[string]string{
+				"Nick":  "Jonas",
+				"Jonas": "Nick",
+				"Bell":  "Elsa",
+			},
+			err: hr.NewInvalidHierarchyError([]string{"Nick", "Jonas", "Nick"}, []string{"Elsa", "?"}),
 		},
 	}
 
@@ -124,8 +134,39 @@ func TestNewHierarchy(t *testing.T) {
 			hier, err := hr.NewHierarchy(tc.req)
 
 			if tc.err != nil {
-				assert.ErrorIs(t, err, tc.err, "match error")
+				derr := err.(*domain.Error)
+				assert.Equal(t, tc.err.Code, derr.Code, "match error code")
+				assert.Equal(t, tc.err.Message, derr.Message, "match error message")
+
+				if loop := tc.err.Meta["loop"]; loop != nil {
+					actual := derr.Meta["loop"].([]string)
+					expected := loop.([]string)
+
+					start := expected[0]
+					offset := 0
+					for i, e := range actual {
+						if e == start {
+							offset = i
+						}
+					}
+
+					actualShifted := make([]string, len(actual))
+					for i := range actual {
+						pos := (offset + i) % (len(actual) - 1)
+						actualShifted[i] = actual[pos]
+					}
+					assert.Equal(t, expected, actualShifted)
+				} else {
+					assert.NotContains(t, tc.err.Meta, "loop")
+				}
+
+				if roots := tc.err.Meta["roots"]; roots != nil {
+					assert.ElementsMatch(t, roots, derr.Meta["roots"])
+				} else {
+					assert.NotContains(t, tc.err.Meta, "roots")
+				}
 			} else {
+				assert.NoError(t, err)
 				assert.Equal(t, tc.expected, hier)
 			}
 		})

@@ -3,6 +3,7 @@ package digraph
 func NewConnectedComponent(g Graph) ConnectedComponent {
 	cc := ConnectedComponent{
 		marked: map[string]bool{},
+		id:     map[string]int{},
 		count:  0,
 	}
 	for v := range g.vertices {
@@ -16,7 +17,8 @@ func NewConnectedComponent(g Graph) ConnectedComponent {
 
 type ConnectedComponent struct {
 	marked map[string]bool
-	count  int // number of connected components
+	id     map[string]int // id[v] = component id of vertex v, id starts from 0
+	count  int            // number of connected components
 }
 
 func (cc *ConnectedComponent) dfs(digraph Graph, v string) {
@@ -28,12 +30,23 @@ func (cc *ConnectedComponent) dfs(digraph Graph, v string) {
 		}
 	}
 	cc.marked[v] = true
+	cc.id[v] = cc.count
 
 	for _, w := range undirected.Adj(v) {
 		if !cc.marked[w] {
 			cc.dfs(undirected, w)
 		}
 	}
+}
+
+func (cc ConnectedComponent) Component(id int) []string {
+	r := make([]string, 0, len(cc.id))
+	for v, comp := range cc.id {
+		if comp == id {
+			r = append(r, v)
+		}
+	}
+	return r
 }
 
 func (cc ConnectedComponent) Count() int {

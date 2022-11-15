@@ -21,12 +21,15 @@ func TestErrorHandler(t *testing.T) {
 	}{
 		{
 			name: "it handles domain error",
-			err:  hr.ErrHierarchyHasLoop,
+			err:  hr.NewInvalidHierarchyError([]string{"Nick", "John", "Nick"}, nil),
 			code: http.StatusUnprocessableEntity,
 			resp: `
 {
-  "code": "hierarchy_has_loop",
-  "message": "hierarchy has loop"
+  "code": "hierarchy_invalid",
+  "message": "hierarchy can't contains loop or multiple roots",
+	"meta": {
+		"loop": ["Nick", "John", "Nick"]
+	}
 }`,
 		},
 		{
